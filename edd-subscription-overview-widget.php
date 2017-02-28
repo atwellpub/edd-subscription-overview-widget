@@ -104,18 +104,18 @@ class EDD_Subscriptions_Overview_Widget {
                             </td>
                         </tr>
                         <tr>
-                            <td class="t sales">
+                            <td class="sales">
                                 Yearly						
                             </td>
-                            <td class="last b b-sales">
+                            <td class="last ">
                                 <?php echo edd_currency_filter(edd_format_amount($year_subscriptions_total , true)); ?>				
                             </td>
                         </tr>
                         <tr>
-                            <td class="t sales">
+                            <td class="sales">
                                 Total Annual
                             </td>
-                            <td class="last b b-sales">
+                            <td class="sales">
                                 <?php echo edd_currency_filter(edd_format_amount($year_subscriptions_total + ( $month_subscriptions_total * 12 ) , true)); ?>
                             </td>
                         </tr>
