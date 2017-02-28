@@ -1,7 +1,7 @@
 <?php
 
 /*
-Plugin Name: Easy Digital Downloads - Business Overview
+Plugin Name: Easy Digital Downloads - Subscriptions Widget
 Plugin URI: http://www.hudsonatwell.co
 Description: Adds dashboard widget that shows deeper insight into subscriptions. 
 Version: 2.4.5
@@ -10,7 +10,7 @@ Author URI: http://www.hudsonatwell.co
 
 */
 
-class EDD_Business_Overview {
+class EDD_Subscriptions_Overview_Widget {
 
     public function __construct() {
 
@@ -113,10 +113,10 @@ class EDD_Business_Overview {
                         </tr>
                         <tr>
                             <td class="t sales">
-                                Total Subscriptions						
+                                Total Annual
                             </td>
                             <td class="last b b-sales">
-                                <?php echo edd_currency_filter(edd_format_amount($year_subscriptions_total + $month_subscriptions_total , true)); ?>				
+                                <?php echo edd_currency_filter(edd_format_amount($year_subscriptions_total + ( $month_subscriptions_total * 12 ) , true)); ?>
                             </td>
                         </tr>
                     </tbody>
@@ -132,4 +132,4 @@ class EDD_Business_Overview {
     }
 }
 
-new EDD_Business_Overview();
+new EDD_Subscriptions_Overview_Widget();
