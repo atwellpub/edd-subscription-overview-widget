@@ -70,11 +70,11 @@ class EDD_Subscriptions_Overview_Widget {
             switch ($subscription->period) {
                 case 'month':                    
                     $month_subscriptions[] = $subscription;
-                    $month_subscriptions_total = $month_subscriptions_total + $subscription->recurring_amount;
+                    $month_subscriptions_total = $month_subscriptions_total + (int) $subscription->recurring_amount;
                     break;
                 case 'year':
                     $year_subscriptions[] = $subscription;                    
-                    $year_subscriptions_total = $year_subscriptions_total + $subscription->recurring_amount;
+                    $year_subscriptions_total = $year_subscriptions_total + (int) $subscription->recurring_amount;
                     break;
             }
         }
