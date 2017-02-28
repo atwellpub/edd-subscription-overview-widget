@@ -14,7 +14,7 @@ class EDD_Subscriptions_Overview_Widget {
 
     public function __construct() {
 
-        add_action('wp_dashboard_setup', array($this, 'add_dashboard_widgets'));        
+        add_action('wp_dashboard_setup', array($this, 'add_dashboard_widgets'));
 
         add_action('admin_enqueue_scripts', array(__CLASS__, 'register_admin_scripts'));
 
@@ -46,39 +46,39 @@ class EDD_Subscriptions_Overview_Widget {
 
     public static function register_admin_scripts($hook) {
 
-       
+
     }
 
-   
+
 
     public static function display_subscription_overview_widget() {
         global $wpdb;
-        
+
         $db = new EDD_Subscriptions_DB;
-		$subscriptions = $db->get_subscriptions( array(
-			'number'      => -1,
-			'status'      => 'active',
-			'period'      => 'month',
-		) );
-        
+        $subscriptions = $db->get_subscriptions( array(
+            'number'      => -1,
+            'status'      => 'active',
+            'period'      => 'month',
+        ) );
+
         $month_subscriptions_total = 0;
         $year_subscriptions_total = 0;
         $month_subscriptions = array();
         $year_subscriptions = array();
-        
+
         foreach ($subscriptions as $key => $subscription) {
             switch ($subscription->period) {
-                case 'month':                    
+                case 'month':
                     $month_subscriptions[] = $subscription;
                     $month_subscriptions_total = $month_subscriptions_total + (int) $subscription->recurring_amount;
                     break;
                 case 'year':
-                    $year_subscriptions[] = $subscription;                    
+                    $year_subscriptions[] = $subscription;
                     $year_subscriptions_total = $year_subscriptions_total + (int) $subscription->recurring_amount;
                     break;
             }
         }
-        
+
 
         ?>
 
@@ -88,37 +88,37 @@ class EDD_Subscriptions_Overview_Widget {
             <div class="table table_totals">
                 <table>
                     <thead>
-                        <tr>
-                            <td colspan="2">
-                                Subscriptions						
-                            </td>
-                        </tr>
+                    <tr>
+                        <td colspan="2">
+                            Subscriptions
+                        </td>
+                    </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td class="t sales">
-                                Monthly
-                            </td>
-                            <td class="last b b-earnings">
-                                <?php echo edd_currency_filter(edd_format_amount($month_subscriptions_total , true)); ?>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="sales">
-                                Yearly						
-                            </td>
-                            <td class="last ">
-                                <?php echo edd_currency_filter(edd_format_amount($year_subscriptions_total , true)); ?>				
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="sales">
-                                Total Annual
-                            </td>
-                            <td class="sales">
-                                <?php echo edd_currency_filter(edd_format_amount($year_subscriptions_total + ( $month_subscriptions_total * 12 ) , true)); ?>
-                            </td>
-                        </tr>
+                    <tr>
+                        <td class="t">
+                            Monthly
+                        </td>
+                        <td class="b">
+                            <?php echo edd_currency_filter(edd_format_amount($month_subscriptions_total , true)); ?>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="t">
+                            Yearly
+                        </td>
+                        <td class="b">
+                            <?php echo edd_currency_filter(edd_format_amount($year_subscriptions_total , true)); ?>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="t">
+                            Total Annual
+                        </td>
+                        <td class="b">
+                            <?php echo edd_currency_filter(edd_format_amount($year_subscriptions_total + ( $month_subscriptions_total * 12 ) , true)); ?>
+                        </td>
+                    </tr>
                     </tbody>
                 </table>
             </div>
@@ -128,7 +128,7 @@ class EDD_Subscriptions_Overview_Widget {
 
 
     public static function add_inline_header_scripts() {
-       
+
     }
 }
 
