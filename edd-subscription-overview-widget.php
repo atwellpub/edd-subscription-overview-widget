@@ -4,7 +4,7 @@
 Plugin Name: Easy Digital Downloads - Subscriptions Widget
 Plugin URI: http://www.hudsonatwell.co
 Description: Adds dashboard widget that shows deeper insight into subscriptions. 
-Version: 0.9.0
+Version: 0.9.1
 Author: Hudson Atwell
 Author URI: http://www.hudsonatwell.co
 
@@ -146,15 +146,16 @@ class EDD_Subscriptions_Overview_Widget {
                 case 'month':
                     $data[$subscription->status]['month']['count']++;
                     $data[$subscription->status]['month']['total'] = $data[$subscription->status]['month']['total'] + $subscription->recurring_amount;
-                    $data[$subscription->status]['month']['total']['subscriptions'][] = $subscription;
+                    $data[$subscription->status]['month']['subscriptions'][] = $subscription;
                     break;
                 case 'year':
                     $data[$subscription->status]['year']['count']++;
                     $data[$subscription->status]['year']['total'] = $data[$subscription->status]['year']['total'] + $subscription->recurring_amount;
-                    $data[$subscription->status]['year']['total']['subscriptions'][] = $subscription;
+                    $data[$subscription->status]['year']['subscriptions'][] = $subscription;
                     break;
             }
         }
+
 
         /* calculate active to canceled ration */
         $month_lcd = self::get_least_common_demoninator($data['active']['month']['total'], $data['cancelled']['month']['total']);
@@ -237,7 +238,7 @@ class EDD_Subscriptions_Overview_Widget {
                         </td>
                         <td class="b">
                             <?php
-                            echo edd_currency_filter(edd_format_amount($data['active']['yesterday']['count'], true));
+                            echo edd_currency_filter(edd_format_amount($data['active']['yesterday']['total'], true));
                             ?>
                         </td>
                     </tr>
