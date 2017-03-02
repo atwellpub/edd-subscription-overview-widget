@@ -31,7 +31,7 @@ class EDD_Subscriptions_Overview_Widget {
         $custom_dashboard_widgets = array(
             'edd-business-overview' => array(
                 'title' => __('Subscriptions Overview', 'inbound-pro'),
-                'callback' => array( __CLASS__ , 'display_subscription_overview_widget')
+                'callback' => array(__CLASS__, 'display_subscription_overview_widget')
             )
         );
 
@@ -50,16 +50,15 @@ class EDD_Subscriptions_Overview_Widget {
     }
 
 
-
     public static function display_subscription_overview_widget() {
         global $wpdb;
 
         $db = new EDD_Subscriptions_DB;
-        $subscriptions = $db->get_subscriptions( array(
-            'number'      => -1,
-            'status'      => array('active','cancelled'),
-            'period'      => 'month',
-        ) );
+        $subscriptions = $db->get_subscriptions(array(
+            'number' => -1,
+            'status' => array('active', 'cancelled'),
+            'period' => 'month',
+        ));
 
         $data = array(
             'active' => array(
@@ -108,13 +107,13 @@ class EDD_Subscriptions_Overview_Widget {
 
         /* setup dates */
         $date = new DateTime();
-        $today  = $date->format('m-d-Y');
+        $today = $date->format('m-d-Y');
         $date->modify('-1 day');
         $yesterday = $date->format('m-d-Y');
 
         foreach ($subscriptions as $key => $subscription) {
 
-            if ( $today == date('m-d-Y', strtotime($subscription->created))) {
+            if ($today == date('m-d-Y', strtotime($subscription->created))) {
                 $data[$subscription->status]['today']['count']++;
                 $data[$subscription->status]['today']['total'] = $data[$subscription->status]['today']['total'] + $subscription->recurring_amount;
             }
@@ -138,6 +137,13 @@ class EDD_Subscriptions_Overview_Widget {
             }
         }
 
+        /* calculate active to canceled ration */
+        $month_lcd = self::get_least_common_demoninator($data['active']['month']['total'], $data['cancelled']['month']['total']);
+        $year_lcd = self::get_least_common_demoninator($data['active']['year']['total'], $data['cancelled']['year']['total']);
+        $combined_active = $data['active']['month']['total'] + $data['active']['year']['total'];
+        $combined_cancelled = $data['cancelled']['month']['total'] + $data['cancelled']['year']['total'];
+        $combined_lcd = self::get_least_common_demoninator($combined_month, $combined_cancelled);
+
 
         ?>
 
@@ -148,13 +154,13 @@ class EDD_Subscriptions_Overview_Widget {
                 <table>
                     <thead>
                     <tr>
-                        <td >
-                            New Subscriptions
+                        <td>
+                            New Active Subscriptions
                         </td>
-                        <td >
+                        <td>
                             #
                         </td>
-                        <td >
+                        <td>
                             Ammount
                         </td>
                     </tr>
@@ -171,7 +177,7 @@ class EDD_Subscriptions_Overview_Widget {
                         </td>
                         <td class="b">
                             <?php
-                            echo edd_currency_filter(edd_format_amount($data['active']['today']['total'] , true));
+                            echo edd_currency_filter(edd_format_amount($data['active']['today']['total'], true));
                             ?>
                         </td>
                     </tr>
@@ -186,7 +192,7 @@ class EDD_Subscriptions_Overview_Widget {
                         </td>
                         <td class="b">
                             <?php
-                            echo edd_currency_filter(edd_format_amount($data['active']['yesterday']['count'] , true));
+                            echo edd_currency_filter(edd_format_amount($data['active']['yesterday']['count'], true));
                             ?>
                         </td>
                     </tr>
@@ -195,13 +201,13 @@ class EDD_Subscriptions_Overview_Widget {
                 <table>
                     <thead>
                     <tr>
-                        <td >
-                            Canceled Subscriptions
+                        <td>
+                            New Canceled Subscriptions
                         </td>
-                        <td >
+                        <td>
                             #
                         </td>
-                        <td >
+                        <td>
                             Ammount
                         </td>
                     </tr>
@@ -218,7 +224,7 @@ class EDD_Subscriptions_Overview_Widget {
                         </td>
                         <td class="b">
                             <?php
-                            echo edd_currency_filter(edd_format_amount($data['active']['today']['total'] , true));
+                            echo edd_currency_filter(edd_format_amount($data['active']['today']['total'], true));
                             ?>
                         </td>
                     </tr>
@@ -233,7 +239,7 @@ class EDD_Subscriptions_Overview_Widget {
                         </td>
                         <td class="b">
                             <?php
-                            echo edd_currency_filter(edd_format_amount($data['cancelled']['yesterday']['count'] , true));
+                            echo edd_currency_filter(edd_format_amount($data['cancelled']['yesterday']['count'], true));
                             ?>
                         </td>
                     </tr>
@@ -242,13 +248,13 @@ class EDD_Subscriptions_Overview_Widget {
                 <table>
                     <thead>
                     <tr>
-                        <td >
-                            Total Subscription Value
+                        <td>
+                            Total Active
                         </td>
-                        <td >
+                        <td>
                             #
                         </td>
-                        <td >
+                        <td>
                             Ammount
                         </td>
                     </tr>
@@ -256,7 +262,7 @@ class EDD_Subscriptions_Overview_Widget {
                     <tbody>
                     <tr>
                         <td class="t">
-                            Total Month Subscriptions
+                            Total Month
                         </td>
                         <td class="b">
                             <?php
@@ -264,12 +270,12 @@ class EDD_Subscriptions_Overview_Widget {
                             ?>
                         </td>
                         <td class="b">
-                            <?php echo edd_currency_filter(edd_format_amount($data['active']['month']['total'] , true)); ?>
+                            <?php echo edd_currency_filter(edd_format_amount($data['active']['month']['total'], true)); ?>
                         </td>
                     </tr>
                     <tr>
                         <td class="t">
-                            Total Annual Subscriptions
+                            Total Annual
                         </td>
                         <td class="b">
                             <?php
@@ -277,12 +283,12 @@ class EDD_Subscriptions_Overview_Widget {
                             ?>
                         </td>
                         <td class="b">
-                            <?php echo edd_currency_filter(edd_format_amount($data['active']['year']['total'] , true)); ?>
+                            <?php echo edd_currency_filter(edd_format_amount($data['active']['year']['total'], true)); ?>
                         </td>
                     </tr>
                     <tr>
                         <td class="t">
-                            Combined Annual Total
+                            Combined Annual
                         </td>
                         <td class="b">
                             <?php
@@ -290,7 +296,115 @@ class EDD_Subscriptions_Overview_Widget {
                             ?>
                         </td>
                         <td class="b">
-                            <?php echo edd_currency_filter(edd_format_amount($data['active']['year']['total'] + ( $data['active']['month']['total'] * 12 ) , true)); ?>
+                            <?php echo edd_currency_filter(edd_format_amount($data['active']['year']['total'] + ($data['active']['month']['total'] * 12), true)); ?>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+
+
+                <table>
+                    <thead>
+                    <tr>
+                        <td>
+                            Total Cancelled
+                        </td>
+                        <td>
+                            #
+                        </td>
+                        <td>
+                            Ammount
+                        </td>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td class="t">
+                            Total Month
+                        </td>
+                        <td class="b">
+                            <?php
+                            echo $data['cancelled']['month']['count'];
+                            ?>
+                        </td>
+                        <td class="b">
+                            <?php echo edd_currency_filter(edd_format_amount($data['cancelled']['month']['total'], true)); ?>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="t">
+                            Total Annual
+                        </td>
+                        <td class="b">
+                            <?php
+                            echo $data['cancelled']['year']['count'];
+                            ?>
+                        </td>
+                        <td class="b">
+                            <?php echo edd_currency_filter(edd_format_amount($data['cancelled']['year']['total'], true)); ?>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="t">
+                            Combined Annual
+                        </td>
+                        <td class="b">
+                            <?php
+                            echo $data['cancelled']['month']['count'] + $data['cancelled']['year']['count'];
+                            ?>
+                        </td>
+                        <td class="b">
+                            <?php echo edd_currency_filter(edd_format_amount($data['cancelled']['year']['total'] + ($data['cancelled']['month']['total'] * 12), true)); ?>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+
+
+                <table>
+                    <thead>
+                    <tr>
+                        <td>
+                            Performance Index
+                        </td>
+                        <td>
+                            Index
+                        </td>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td class="t">
+                            Month Subscriptions
+                        </td>
+                        <td class="b">
+                            <?php
+                            $t = (($data['active']['month']['total'] / $month_lcd) / ($data['cancelled']['month']['total'] / $month_lcd));
+                            echo number_format($t, '2', '.', '');
+                            ?>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="t">
+                            Year Subscriptions
+                        </td>
+                        <td class="b">
+                            <?php
+                            $t = (($data['active']['year']['total'] / $year_lcd) / ($data['cancelled']['year']['total'] / $year_lcd));
+                            echo number_format($t, '2', '.', '');
+                            ?>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="t">
+                            Combined Subscriptions
+                        </td>
+                        <td class="b">
+                            <?php
+
+                            $t = (($combined_active / $combined_lcd) / ($combined_cancelled / $combined_lcd));
+                            echo number_format($t, '2', '.', '');
+                            ?>
                         </td>
                     </tr>
                     </tbody>
@@ -298,6 +412,18 @@ class EDD_Subscriptions_Overview_Widget {
             </div>
         </div>
         <?php
+    }
+
+
+    public static function get_least_common_demoninator($a, $b) {
+
+        while ($b != 0) {
+            $remainder = $a % $b;
+            $a = $b;
+            $b = $remainder;
+        }
+        return abs($a);
+
     }
 
 
