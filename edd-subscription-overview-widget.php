@@ -57,24 +57,83 @@ class EDD_Subscriptions_Overview_Widget {
         $db = new EDD_Subscriptions_DB;
         $subscriptions = $db->get_subscriptions( array(
             'number'      => -1,
-            'status'      => 'active',
+            'status'      => array('active','cancelled'),
             'period'      => 'month',
         ) );
 
-        $month_subscriptions_total = 0;
-        $year_subscriptions_total = 0;
-        $month_subscriptions = array();
-        $year_subscriptions = array();
+        $data = array(
+            'active' => array(
+                'today' => array(
+                    'count' => 0,
+                    'total' => 0
+                ),
+                'yesterday' => array(
+                    'count' => 0,
+                    'total' => 0
+                ),
+                'month' => array(
+                    'count' => 0,
+                    'total' => 0,
+                    'subscriptions' => array()
+                ),
+                'year' => array(
+                    'count' => 0,
+                    'total' => 0,
+                    'subscriptions' => array()
+                )
+            ),
+            'cancelled' => array(
+                'today' => array(
+                    'count' => 0,
+                    'total' => 0
+                ),
+                'yesterday' => array(
+                    'count' => 0,
+                    'total' => 0
+                ),
+                'month' => array(
+                    'count' => 0,
+                    'total' => 0,
+                    'subscriptions' => array()
+                ),
+                'year' => array(
+                    'count' => 0,
+                    'total' => 0,
+                    'subscriptions' => array()
+                )
+            ),
+
+        );
+
+
+        /* setup dates */
+        $date = new DateTime();
+        $today  = $date->format('m-d-Y');
+        $date->modify('-1 day');
+        $yesterday = $date->format('m-d-Y');
 
         foreach ($subscriptions as $key => $subscription) {
+
+            if ( $today == date('m-d-Y', strtotime($subscription->created))) {
+                $data[$subscription->status]['today']['count']++;
+                $data[$subscription->status]['today']['total'] = $data[$subscription->status]['today']['total'] + $subscription->recurring_amount;
+            }
+
+            if ($yesterday == date('m-d-Y', strtotime($subscription->created))) {
+                $data[$subscription->status]['yesterday']['count']++;
+                $data[$subscription->status]['yesterday']['total'] = $data[$subscription->status]['yesterday']['total'] + $subscription->recurring_amount;
+            }
+
             switch ($subscription->period) {
                 case 'month':
-                    $month_subscriptions[] = $subscription;
-                    $month_subscriptions_total = $month_subscriptions_total + (int) $subscription->recurring_amount;
+                    $data[$subscription->status]['month']['count']++;
+                    $data[$subscription->status]['month']['total'] = $data[$subscription->status]['month']['total'] + $subscription->recurring_amount;
+                    $data[$subscription->status]['month']['total']['subscriptions'][] = $subscription;
                     break;
                 case 'year':
-                    $year_subscriptions[] = $subscription;
-                    $year_subscriptions_total = $year_subscriptions_total + (int) $subscription->recurring_amount;
+                    $data[$subscription->status]['year']['count']++;
+                    $data[$subscription->status]['year']['total'] = $data[$subscription->status]['year']['total'] + $subscription->recurring_amount;
+                    $data[$subscription->status]['year']['total']['subscriptions'][] = $subscription;
                     break;
             }
         }
@@ -89,34 +148,149 @@ class EDD_Subscriptions_Overview_Widget {
                 <table>
                     <thead>
                     <tr>
-                        <td colspan="2">
-                            Subscriptions
+                        <td >
+                            New Subscriptions
+                        </td>
+                        <td >
+                            #
+                        </td>
+                        <td >
+                            Ammount
                         </td>
                     </tr>
                     </thead>
                     <tbody>
                     <tr>
                         <td class="t">
-                            Monthly
+                            Today
                         </td>
                         <td class="b">
-                            <?php echo edd_currency_filter(edd_format_amount($month_subscriptions_total , true)); ?>
+                            <?php
+                            echo $data['active']['today']['count'];
+                            ?>
+                        </td>
+                        <td class="b">
+                            <?php
+                            echo edd_currency_filter(edd_format_amount($data['active']['today']['total'] , true));
+                            ?>
                         </td>
                     </tr>
                     <tr>
                         <td class="t">
-                            Yearly
+                            Yesterday
                         </td>
                         <td class="b">
-                            <?php echo edd_currency_filter(edd_format_amount($year_subscriptions_total , true)); ?>
+                            <?php
+                            echo $data['active']['yesterday']['count'];
+                            ?>
+                        </td>
+                        <td class="b">
+                            <?php
+                            echo edd_currency_filter(edd_format_amount($data['active']['yesterday']['count'] , true));
+                            ?>
+                        </td>
+                    </tr>
+                </table>
+
+                <table>
+                    <thead>
+                    <tr>
+                        <td >
+                            Canceled Subscriptions
+                        </td>
+                        <td >
+                            #
+                        </td>
+                        <td >
+                            Ammount
+                        </td>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td class="t">
+                            Today
+                        </td>
+                        <td class="b">
+                            <?php
+                            echo $data['cancelled']['today']['count'];
+                            ?>
+                        </td>
+                        <td class="b">
+                            <?php
+                            echo edd_currency_filter(edd_format_amount($data['active']['today']['total'] , true));
+                            ?>
                         </td>
                     </tr>
                     <tr>
                         <td class="t">
-                            Total Annual
+                            Yesterday
                         </td>
                         <td class="b">
-                            <?php echo edd_currency_filter(edd_format_amount($year_subscriptions_total + ( $month_subscriptions_total * 12 ) , true)); ?>
+                            <?php
+                            echo $data['cancelled']['yesterday']['count'];
+                            ?>
+                        </td>
+                        <td class="b">
+                            <?php
+                            echo edd_currency_filter(edd_format_amount($data['cancelled']['yesterday']['count'] , true));
+                            ?>
+                        </td>
+                    </tr>
+                </table>
+
+                <table>
+                    <thead>
+                    <tr>
+                        <td >
+                            Total Subscription Value
+                        </td>
+                        <td >
+                            #
+                        </td>
+                        <td >
+                            Ammount
+                        </td>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td class="t">
+                            Total Month Subscriptions
+                        </td>
+                        <td class="b">
+                            <?php
+                            echo $data['active']['month']['count'];
+                            ?>
+                        </td>
+                        <td class="b">
+                            <?php echo edd_currency_filter(edd_format_amount($data['active']['month']['total'] , true)); ?>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="t">
+                            Total Annual Subscriptions
+                        </td>
+                        <td class="b">
+                            <?php
+                            echo $data['active']['year']['count'];
+                            ?>
+                        </td>
+                        <td class="b">
+                            <?php echo edd_currency_filter(edd_format_amount($data['active']['year']['total'] , true)); ?>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="t">
+                            Combined Annual Total
+                        </td>
+                        <td class="b">
+                            <?php
+                            echo $data['active']['month']['count'] + $data['active']['year']['count'];
+                            ?>
+                        </td>
+                        <td class="b">
+                            <?php echo edd_currency_filter(edd_format_amount($data['active']['year']['total'] + ( $data['active']['month']['total'] * 12 ) , true)); ?>
                         </td>
                     </tr>
                     </tbody>
