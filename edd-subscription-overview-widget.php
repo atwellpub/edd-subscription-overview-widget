@@ -4,7 +4,7 @@
 Plugin Name: Easy Digital Downloads - Subscriptions Widget
 Plugin URI: http://www.hudsonatwell.co
 Description: Adds dashboard widget that shows deeper insight into subscriptions. 
-Version: 2.4.5
+Version: 0.9.0
 Author: Hudson Atwell
 Author URI: http://www.hudsonatwell.co
 
@@ -53,7 +53,27 @@ class EDD_Subscriptions_Overview_Widget {
     public static function display_subscription_overview_widget() {
         global $wpdb;
 
+        /* get settings array from database
+        $settings = get_option('edd_subscriptions_widget' , array());*/
+        /* determine default view
+        $default_view = (isset($settings['default_view'])) ? $settings['default_views'] : 'all'; */
+
+        /* setup dates */
+        $date = new DateTime();
+        $current_year = $date->format('Y');
+        $today = $date->format('m-d-Y');
+        $date->modify('-1 day');
+        $yesterday = $date->format('m-d-Y');
+        $date->modify('-1 year');
+        $past_year = $date->format('Y');
+
+        /* get default view */
+        $default_view = (isset($_GET['subscriptions_view'])) ? $_GET['subscriptions_view'] : $current_year;
+
+        /* ready EDD DB connector */
         $db = new EDD_Subscriptions_DB;
+
+        /* Get Subscriptions */
         $subscriptions = $db->get_subscriptions(array(
             'number' => -1,
             'status' => array('active', 'cancelled'),
@@ -105,13 +125,12 @@ class EDD_Subscriptions_Overview_Widget {
         );
 
 
-        /* setup dates */
-        $date = new DateTime();
-        $today = $date->format('m-d-Y');
-        $date->modify('-1 day');
-        $yesterday = $date->format('m-d-Y');
-
         foreach ($subscriptions as $key => $subscription) {
+
+            /* Filter data by date  */
+            if ($default_view != date('Y', strtotime($subscription->created)) && $default_view != 'all') {
+                continue;
+            }
 
             if ($today == date('m-d-Y', strtotime($subscription->created))) {
                 $data[$subscription->status]['today']['count']++;
@@ -151,6 +170,32 @@ class EDD_Subscriptions_Overview_Widget {
         <script language="javascript" type="text/javascript" src="/wp-content/plugins/lead-dashboard-widgets/assets/js/flot/excanvas.min.js"></script><![endif]-->
         <div class="edd_dashboard_widget">
             <div class="table table_totals">
+                <ul>
+                    <li><?php
+
+
+                        if ($default_view != $current_year ) {
+                            echo '<a href="?subscriptions_view='.$current_year.'">Current Year</a> | ';
+                        } else  {
+                            echo 'Current Year | ';
+                        }
+
+                        if ($default_view != $past_year) {
+                            echo '<a href="?subscriptions_view='.$past_year.'">Past Year</a> | ';
+                        } else  {
+                            echo 'Past Year | ';
+                        }
+
+                        if ($default_view != 'all') {
+                            echo '<a href="?subscriptions_view=all">Lifetime</a> ';
+                        } else  {
+                            echo 'Lifetime ';
+                        }
+
+                        ?>
+                    </li>
+                    <li>
+                </ul>
                 <table>
                     <thead>
                     <tr>
@@ -202,7 +247,7 @@ class EDD_Subscriptions_Overview_Widget {
                     <thead>
                     <tr>
                         <td>
-                            New Canceled Subscriptions
+                            New Cancelled Subscriptions
                         </td>
                         <td>
                             #
@@ -224,7 +269,7 @@ class EDD_Subscriptions_Overview_Widget {
                         </td>
                         <td class="b">
                             <?php
-                            echo edd_currency_filter(edd_format_amount($data['active']['today']['total'], true));
+                            echo edd_currency_filter(edd_format_amount($data['cancelled']['today']['total'], true));
                             ?>
                         </td>
                     </tr>
