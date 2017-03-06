@@ -58,8 +58,12 @@ class EDD_Subscriptions_Overview_Widget {
         /* determine default view
         $default_view = (isset($settings['default_view'])) ? $settings['default_views'] : 'all'; */
 
+        /* get transient */
+        $transient = get_transient('edd-subscriptions-widget' , array() );
+
         /* setup dates */
-        $date = new DateTime();
+        $wordpress_date_time = date_i18n('Y-m-d');
+        $date = new DateTime($wordpress_date_time);
         $current_year = $date->format('Y');
         $today = $date->format('m-d-Y');
         $date->modify('-1 day');
@@ -125,11 +129,24 @@ class EDD_Subscriptions_Overview_Widget {
         );
 
 
+
         foreach ($subscriptions as $key => $subscription) {
+
+            if ( $transient && !isset($_GET['subscriptions_view'])) {
+                $data = $transient;
+                break;
+            }
 
             /* Filter data by date  */
             if ($default_view != date('Y', strtotime($subscription->created)) && $default_view != 'all') {
                 continue;
+            }
+
+            /* if canceled find cancellation date */
+            if ($subscription->status == 'cancelled') {
+                $cancellation_note = $subscription->customer->notes[0];
+                $cancellation_notes_parts = explode('-', $cancellation_note);
+                $subscription->created = trim($cancellation_notes_parts[0]);
             }
 
             if ($today == date('m-d-Y', strtotime($subscription->created))) {
@@ -285,7 +302,7 @@ class EDD_Subscriptions_Overview_Widget {
                         </td>
                         <td class="b">
                             <?php
-                            echo edd_currency_filter(edd_format_amount($data['cancelled']['yesterday']['count'], true));
+                            echo edd_currency_filter(edd_format_amount($data['cancelled']['yesterday']['total'], true));
                             ?>
                         </td>
                     </tr>
@@ -308,7 +325,7 @@ class EDD_Subscriptions_Overview_Widget {
                     <tbody>
                     <tr>
                         <td class="t">
-                            Total Month
+                            Total Monthly
                         </td>
                         <td class="b">
                             <?php
@@ -321,7 +338,7 @@ class EDD_Subscriptions_Overview_Widget {
                     </tr>
                     <tr>
                         <td class="t">
-                            Total Annual
+                            Total Yearly
                         </td>
                         <td class="b">
                             <?php
@@ -366,7 +383,7 @@ class EDD_Subscriptions_Overview_Widget {
                     <tbody>
                     <tr>
                         <td class="t">
-                            Total Month
+                            Total Monthly
                         </td>
                         <td class="b">
                             <?php
@@ -379,7 +396,7 @@ class EDD_Subscriptions_Overview_Widget {
                     </tr>
                     <tr>
                         <td class="t">
-                            Total Annual
+                            Total Yearly
                         </td>
                         <td class="b">
                             <?php
@@ -421,23 +438,23 @@ class EDD_Subscriptions_Overview_Widget {
                     <tbody>
                     <tr>
                         <td class="t">
-                            Month Subscriptions
+                            Monthly Subscriptions
                         </td>
                         <td class="b">
                             <?php
-                            $t = (($data['active']['month']['total'] / $month_lcd) / ($data['cancelled']['month']['total'] / $month_lcd));
+                            $t = (($data['active']['month']['total'] ) / ($data['cancelled']['month']['total']));
                             echo number_format($t, '2', '.', '');
                             ?>
                         </td>
                     </tr>
                     <tr>
                         <td class="t">
-                            Year Subscriptions
+                            Yearly Subscriptions
                         </td>
                         <td class="b">
                             <?php
-                            $t = (($data['active']['year']['total'] / $year_lcd) / ($data['cancelled']['year']['total'] / $year_lcd));
-                            echo number_format($t, '2', '.', '');
+                            $t = (($data['active']['year']['total'] ) / ($data['cancelled']['year']['total'] ));
+                            echo number_format($t, '2', '.', '') ;
                             ?>
                         </td>
                     </tr>
@@ -448,7 +465,7 @@ class EDD_Subscriptions_Overview_Widget {
                         <td class="b">
                             <?php
 
-                            $t = (($combined_active / $combined_lcd) / ($combined_cancelled / $combined_lcd));
+                            $t = (($combined_active) / ($combined_cancelled ));
                             echo number_format($t, '2', '.', '');
                             ?>
                         </td>
@@ -458,6 +475,9 @@ class EDD_Subscriptions_Overview_Widget {
             </div>
         </div>
         <?php
+
+        /* store 10 minute transient */
+        set_transient('edd-subscriptions-widget' , $data , 60 * 10 );
     }
 
 
